@@ -10,7 +10,7 @@ const submitTitle = document.querySelector('.submit-movie-search');
 const clearSearched = document.querySelector('.clear-searched'); 
 const searchedList = document.querySelector(".searched-list"); 
 
-//must be global 
+//must be global array
 const listOfMovies = [];
 const allMovies = [];
 
@@ -45,22 +45,22 @@ function filterMovies() {
         searchTitle.value = "";
         return;
     }else {
-        allMovies.forEach((movieElement => {
-            if(movieElement.title.includes(searchTitle.value)) {
-                let { genre, rating, getFormattedTitle } = movieElement;
-                getFormattedTitle = getFormattedTitle.bind(movieElement);
-                let movieEl = `${movieElement.getFormattedTitle()} : ${genre} | ${rating}`;
-                const searchedListItem = document.createElement("li");
-                searchedListItem.textContent = movieEl;
-                searchedList.append(searchedListItem); 
-                searchedList.addEventListener("click", () =>{
-                    searchedList.removeChild(searchedListItem);
-                })
-            }else {
-                alert("Please enter a valid movie title.")
-            }
+        let filteredMovies = allMovies.filter((movie => {
+            return movie.title.includes(searchTitle.value);
+        }));
+        filteredMovies.forEach((filteredMovie => {
+            let { genre, rating, getFormattedTitle } = filteredMovie;
+            getFormattedTitle = getFormattedTitle.bind(filteredMovie);
+            let filteredElement = `${filteredMovie.getFormattedTitle()} : ${genre} | ${rating}`;
+            let filteredItem = document.createElement("li");
+            filteredItem.textContent = filteredElement;
+            searchedList.append(filteredItem);
+            searchTitle.value = "";
+            filteredItem.addEventListener("click", () => {
+                searchedList.removeChild(filteredItem);
+            })
+            searchTitle.value = "";
         }))
-        searchTitle.value = "";
     }
 }
 
