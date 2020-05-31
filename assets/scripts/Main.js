@@ -10,7 +10,7 @@ const submitTitle = document.querySelector('.submit-movie-search');
 const clearSearched = document.querySelector('.clear-searched'); 
 const searchedList = document.querySelector(".searched-list"); 
 
-//must be global array
+//must be global arrays
 const listOfMovies = [];
 const allMovies = [];
 
