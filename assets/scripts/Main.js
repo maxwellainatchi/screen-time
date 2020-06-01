@@ -1,122 +1,188 @@
-const movieTitle = document.querySelector(".movie-title");
-const movieGenre = document.querySelector('.movie-genre');
-const movieRating = document.querySelector('.movie-rating');
-const submitMovieInfo = document.querySelector('.submit-movie-information'); 
-const clearMovies = document.querySelector('.clear-movies'); 
-const movieList = document.querySelector(".movie-list"); 
+class Movie {
+    static nextMovieID = 1;
+    constructor(title, genre, rating) {
+        // Sets a unique movie ID for add/insert/remove.
+        this.movieID = Movie.nextMovieID++;
 
-const searchTitle = document.querySelector('.searching-movie-title'); 
-const submitTitle = document.querySelector('.submit-movie-search'); 
-const clearSearched = document.querySelector('.clear-searched'); 
-const searchedList = document.querySelector(".searched-list"); 
+        this.title = title;
+        this.genre = genre;
+        this.rating = rating;
+    }
 
-//must be global arrays
-const listOfMovies = [];
-const allMovies = [];
-
-function renderMovie() {
-    listOfMovies.forEach((movie => {
-        let { title, genre, rating, getFormattedTitle} = movie;
-        getFormattedTitle = getFormattedTitle.bind(movie);
-        movieElement = `${movie.getFormattedTitle()} : ${genre} | ${rating}`;
-        const movieListItemElement = document.createElement("li");
-        movieListItemElement.textContent = movieElement;
-        movieList.append(movieListItemElement);
-        movieListItemElement.addEventListener("click", () => {
-            movieList.removeChild(movieListItemElement);
-            allMovies.forEach((movie => {
-                if(movie.title.includes(title)) {
-                    let index = allMovies.indexOf(movie);
-                    allMovies.splice(index, 1);
-                }
-            }))
+    createLi({ onClick }) {
+        const listElement = document.createElement("li");
+        listElement.textContent = `${this.getFormattedTitle()} : ${this.genre} | ${this.rating}`;
+        listElement.addEventListener("click", () => {
+            onClick(this)
         })
-        listOfMovies.length = 0;
-        movieTitle.value = "";
-        movieGenre.value = "";
-        movieRating.value = "";
-    }))
-}
+        return listElement
+    }
 
-function filterMovies() {
-    searchTitle.value.trim();
-    if(searchTitle.value.trim() === "" || allMovies.length === 0) {
-        alert("Please enter a valid movie title.")
-        searchTitle.value = "";
-        return;
-    }else {
-        let filteredMovies = allMovies.filter((movie => {
-            if(movie.title.includes(searchTitle.value)) {
-                return movie.title.includes(searchTitle.value);
-            }else {
-                alert("Please enter a valid movie title.");
-                searchTitle.value = "";
-            }
-        }));
-        filteredMovies.forEach((filteredMovie => {
-            let { genre, rating, getFormattedTitle } = filteredMovie;
-            getFormattedTitle = getFormattedTitle.bind(filteredMovie);
-            let filteredElement = `${filteredMovie.getFormattedTitle()} : ${genre} | ${rating}`;
-            let filteredItem = document.createElement("li");
-            filteredItem.textContent = filteredElement;
-            searchedList.append(filteredItem);
-            searchTitle.value = "";
-            filteredItem.addEventListener("click", () => {
-                searchedList.removeChild(filteredItem);
-            })
-            searchTitle.value = "";
-        }))
+    getFormattedTitle() {
+        return this.title.charAt(0).toUpperCase() + this.title.slice(1);
     }
 }
 
-function getAndVerifyUserInputs() {
-    let title = movieTitle.value.trim();
-    let genre = movieGenre.value.trim();
-    let rating = movieRating.value.trim();
+class ValidationError extends Error {
+    constructor(message, element) {
+        super(message);
+        this.element = element
+    }
 
-    if(title === "" ||
-    genre === "" ||
-    rating === "") {
-        alert("Please enter a valid movie title, genre and rating.")
-        movieTitle.value = "";
-        movieGenre.value = "";
-        movieRating.value = "";
-        return;
-    }else if (rating > 5 || rating < 1) {
-        alert("Please enter a rating between 1 and 5.")
-        movieRating.value = ""; 
-        return;
-    }else {
-        let movie = {
-            title,
-            genre,
-            rating,
-            getFormattedTitle() {
-                return this.title.charAt(0).toUpperCase() + this.title.slice(1); 
-            }
+    alert() {
+        alert(`Error: ${this.message}`);
+    }
+}
+
+/**
+ * Represents a movie form. Handles submitting new movies and clearing the form inputs. 
+ * Accepts an onSubmit parameter, which will allow another function to hook into movie creating
+ */
+class MovieForm {
+    /**
+     * @param {Function} onSubmit Allow something to happen with the movie when submitting the form
+     */
+    constructor(onSubmit) {
+        this.onSubmit = onSubmit
+
+        // The DOM element representing the title input
+        this.titleInput = document.querySelector(".movie-title");
+        // The DOM element representing the genre input
+        this.genreInput = document.querySelector(".movie-genre");
+        // The DOM element representing the rating input
+        this.ratingInput = document.querySelector(".movie-rating");
+
+        // The DOM element representing the submit button on the form
+        this.submitButton = document.querySelector(".submit-movie-information");
+        // Add the event listener to submit the button
+        this.submitButton.addEventListener("click", this.submit.bind(this));
+        // you could also do
+        // this.submitButton.addEventListener("click", () => this.submit());
+    }
+
+    validate() {
+        if (this.titleInput.value.trim() === "") {
+            throw new ValidationError("Please add a title", this.titleInput)
         }
-        listOfMovies.push(movie);
-        allMovies.push(movie);
+        if (this.genreInput.value === "") {
+            throw new ValidationError("Please select a genre", this.genreInput);
+        }
+        if (this.ratingInput.value < 1 || this.ratingInput.value > 5) {
+            throw new ValidationError("Please set a rating from 1 to 5");
+        }
     }
-    renderMovie();
+
+    /**
+     * Submit the form, clearing it, and pass the newly created movie to this.onSubmit.
+     */
+    submit() {
+        try {
+            this.validate();
+        } catch (error) {
+            if (error instanceof ValidationError) {
+                return error.alert();
+            }
+            // If error is not a validation error, we don't know how to handle it.
+            throw error;
+        }
+        const title = this.titleInput.value.trim();
+        const genre = this.genreInput.value;
+        const rating = parseInt(this.ratingInput.value);
+
+        this.clear()
+        const movie = new Movie(title, genre, rating);
+        this.onSubmit(movie);
+
+    }
+
+    /**
+     * Clear the movie form, resetting all the values back to their defaults.
+     */
+    clear() {
+        this.titleInput.value = ""
+        this.genreInput.selectedIndex = 1
+        this.ratingInput.value = ""
+    }
 }
 
-function eventListeners() {
-    movieGenre.value = "";
-    submitMovieInfo.addEventListener("click", getAndVerifyUserInputs);
-    submitTitle.addEventListener("click", filterMovies);
-    
-    clearMovies.addEventListener("click", () => {
-        searchedList.textContent = "";
-        movieList.textContent = "";
-        allMovies.length = 0;
-        listOfMovies.length = 0;
-    })
-    clearSearched.addEventListener("click", () => {
-        searchedList.textContent = ""
-    });
+/**
+ * Represents the movie database.
+ * 
+ * Handles adding new movies, searching, and clearing the list.
+ */
+class MovieDatabase {
+    /** @type {Movie[]} */
+    movies = [];
+
+    clear() {
+        this.movies = [];
+    }
+
+    /** @param {Movie} movie */
+    add(movie) {
+        this.movies.push(movie);
+    }
+
+    /** @param {Movie} movieToRemove */
+    remove(movieToRemove) {
+        const index = this.movies.findIndex(movie => movie.movieID === movieToRemove.movieID);
+        if (index !== -1) {
+            this.movies.splice(index, 1);
+        } else {
+            alert(`Error: Unknown movie ${movie.movieID} (${movie.title}) was attempted to be removed, but doesn't exist.`);
+        }
+    }
+
+    /** @param {string} [searchTitle] */
+    getMovies(searchTitle) {
+        if (!searchTitle) {
+            return this.movies;
+        }
+        // todo: implement searching
+        throw Error("unimplemented")
+    }
 }
 
-eventListeners();
+class MovieList {
+    /**
+     * @param {MovieDatabase} database The movie database
+     */
+    constructor(database) {
+        this.database = database;
 
+        this.listElement = document.querySelector(".movie-list");
+        this.clearElement = document.querySelector(".clear-movies");
+        this.clearElement.addEventListener("click", this.clear.bind(this));
 
+        this.movieForm = new MovieForm(this.add.bind(this));
+    }
+
+    /** @param {Movie} movie */
+    add(movie) {
+        this.database.add(movie);
+        // NOTE: this is inefficient, since it recreates all the lis every time a movie is added.
+        // TODO: make more efficient
+        this.render();
+    }
+
+    render() {
+        this.clear();
+        const movieElements = this.database.getMovies().map(movie => movie.createLi({
+            onClick: movie => this.database.remove(movie)
+        }))
+        movieElements.forEach(movieElement =>  this.listElement.appendChild(movieElement));
+    }
+
+    clear() {
+        [...this.listElement.children].forEach(this.listElement.removeChild);
+    }
+}
+
+function main() {
+    const movieDatabase = new MovieDatabase();
+    const movieList = new MovieList(movieDatabase);
+    movieList.render();
+}
+
+// Wait for the DOM to load before constructing everything
+window.addEventListener("DOMContentLoaded", main);
