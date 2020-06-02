@@ -13,6 +13,7 @@ const searchedList = document.querySelector(".searched-list");
 //must be global arrays
 const listOfMovies = [];
 const allMovies = [];
+let filteredMovies = [];
 
 function renderMovie() {
     listOfMovies.forEach((movie => {
@@ -45,14 +46,14 @@ function filterMovies() {
         searchTitle.value = "";
         return;
     }else {
-        let filteredMovies = allMovies.filter((movie => {
+        let determination;
+        filteredMovies = allMovies.filter((movie => {
             if(movie.title.includes(searchTitle.value)) {
+                determination = true;
                 return movie.title.includes(searchTitle.value);
-            }else {
-                alert("Please enter a valid movie title.");
-                searchTitle.value = "";
-            }
+            }                       
         }));
+        if(determination === true) {
         filteredMovies.forEach((filteredMovie => {
             let { genre, rating, getFormattedTitle } = filteredMovie;
             getFormattedTitle = getFormattedTitle.bind(filteredMovie);
@@ -66,6 +67,10 @@ function filterMovies() {
             })
             searchTitle.value = "";
         }))
+        }else {
+            alert("Please enter a valid movie title.");
+            searchTitle.value = "";
+        }
     }
 }
 
@@ -111,6 +116,7 @@ function eventListeners() {
         movieList.textContent = "";
         allMovies.length = 0;
         listOfMovies.length = 0;
+        filteredMovies.length = 0;
     })
     clearSearched.addEventListener("click", () => {
         searchedList.textContent = ""
