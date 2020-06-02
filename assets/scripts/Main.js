@@ -53,7 +53,7 @@ function filterMovies() {
                 return movie.title.includes(searchTitle.value);
             }                       
         }));
-        if(determination === true) {
+        if(determination === true) { //doesn't need 3 equals
         filteredMovies.forEach((filteredMovie => {
             let { genre, rating, getFormattedTitle } = filteredMovie;
             getFormattedTitle = getFormattedTitle.bind(filteredMovie);
