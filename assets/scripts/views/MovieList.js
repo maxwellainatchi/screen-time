@@ -1,4 +1,4 @@
-import MovieForm from "./MovieForm";
+import MovieForm from "./MovieForm.js";
 
 /**
  * Represents the list of movies

@@ -1,4 +1,4 @@
-import { ValidationError } from "../utils";
+import { ValidationError } from "../utils.js";
 
 export default class MovieSearcher {
     /**

@@ -1,5 +1,5 @@
-import { ValidationError } from "../utils";
-import Movie from "../models/Movie";
+import { ValidationError } from "../utils.js";
+import Movie from "../models/Movie.js";
 
 /**
  * Represents a movie form. Handles submitting new movies and clearing the form inputs. 
