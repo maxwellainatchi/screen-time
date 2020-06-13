@@ -1,4 +1,3 @@
-
 import MovieDatabase from "./models/MovieDatabase";
 import MovieList from "./views/MovieList";
 import MovieSearcher from "./views/MovieSearcher";
