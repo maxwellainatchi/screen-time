@@ -43,6 +43,12 @@ function filterMovies() {
     searchTitle.value.trim();
     if(searchTitle.value.trim() === "" || allMovies.length === 0) {
         alert("Please enter a valid movie title.")
+        
+        searchTitle.style.borderColor = "red";
+        setTimeout(() => {
+            searchTitle.style.borderColor = "black"
+        }, 1500);
+
         searchTitle.value = "";
         return;
     }else {
@@ -83,12 +89,24 @@ function getAndVerifyUserInputs() {
     genre === "" ||
     rating === "") {
         alert("Please enter a valid movie title, genre and rating.")
+
+        const addingMovieSection = document.querySelector(".adding-movie");
+        addingMovieSection.style.border = "2px solid red";
+        setTimeout(() => {
+            addingMovieSection.style.border = "none";
+        }, 1500);
+
         movieTitle.value = "";
         movieGenre.value = "";
         movieRating.value = "";
         return;
     }else if (rating > 5 || rating < 1) {
         alert("Please enter a rating between 1 and 5.")
+        
+        movieRating.style.borderBottom = "2px solid red";
+        setTimeout(() => {
+            movieRating.style.borderColor = "black";
+        }, 1500);
         movieRating.value = ""; 
         return;
     }else {
